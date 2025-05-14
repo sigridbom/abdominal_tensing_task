@@ -18,12 +18,18 @@ from psychopy import visual, core, event
 
 ###### ----------------- setting variables ------------------ ######
 
-NUM_TRIALS = 6  # Must be an even number for balanced randomization
+NUM_TRIALS = 6  # trial number in total - must be an even number for balanced randomization
 trial_types = ["abdominal", "hands"] * (NUM_TRIALS // 2)
 random.shuffle(trial_types)
 
 random_break = random.randint(3, 9)  # Random break between 3 and 9 seconds
 
+trial_colors = {
+    "hands": "green",
+    "abdominal": "blue"
+}
+
+default_color = "grey"
 #### ----------------- TEXT ------------------ ######
 
 tutorial_texts = [
@@ -45,20 +51,31 @@ break_text2 = "Eksperimentet starter nu"
 trial_templates = {
     "abdominal": {
         "anticipation": "Gør dig klar. Om lidt skal du spænde i dine mavemuskler.",
-        "provocation": "Spænd i dine mavemuskler nu.",
+        "provocation": "Spænd i dine mavemuskler nu.\nHvis du ikke kan spænde mere, så tryk på mellemrumstasten.",
         "recovery": "Slap af i dine mavemuskler."
     },
     "hands": {
         "anticipation": "Gør dig klar. Om lidt skal du knytte dine hænder.",
-        "provocation": "Knyt dine hænder nu.",
+        "provocation": "Knyt dine hænder nu.\nHvis du ikke kan knytte dine hænder længere, så tryk på mellemrumstasten.",
         "recovery": "Slap af i dine hænder."
     }
 }
 
 vas_questions = [
-    "Hvor intenst var ubehaget?",
-    "Hvor ubehageligt føltes det?",
-    "Hvor meget spændte du?"
+    "Blev du bange/nervøs, da du ventede på at skulle spænde dine mavemuskler eller knytte dine hænder?",
+    "Blev du bange/nervøs, da du spændte dine mavemuskler eller knyttede dine hænder?",
+    "Blev du bange/nervøs, efter du havde spændt dine mavemuskler eller knyttet dine hænder?",
+    "Gjorde det ondt, da du ventede på at skulle spænde dine mavemuskler eller knytte dine hænder?",
+    "Gjorde det ondt, da du spændte dine mavemuskler eller knyttede dine hænder?",
+    "Gjorde det ondt, efter du havde spændt dine mavemuskler eller knyttet dine hænder?",
+    "Havde du lyst til at undgå at spænde dine mavemuskler eller knytte dine hænder, da du ventede på at skulle gøre det?",
+    "Havde du lyst til at undgå at spænde dine mavemuskler eller knytte dine hænder, da du spændte dem/knyttede dine hænder?",
+    "Havde du lyst til at undgå at spænde dine mavemuskler eller knytte dine hænder, efter du havde spændt dem/knyttet dine hænder?"
+]
+
+vas_questions2 = [
+    "Marké på skalaen nedenfor i hvilken grad det, du kunne mærke før du skulle spænde i dine mavemuskler, kan sammenlignes med det du kan mærke i din mave, før du får ondt.",
+    "Markér på skalaen nedenfor i hvilken grad det, at spænde i dine mavemuskler, kan sammenlignes med det du kan mærke, når du har ondt i maven.",
 ]
 
 # trial_texts = [
@@ -87,15 +104,11 @@ except ValueError:
 #participant_ID = input("Participant ID:")
 
 
-###### ----------------- EXPERIMENT CODE ------------------ ######
+###### ----------------- Create window and save keys ------------------ ######
 # # Create a window
-win = visual.Window(fullscr=True, color = "grey", units="pix")
+win = visual.Window(fullscr=True, color = default_color, units="pix")
 #win = visual.Window(size=[800, 600], color="black", fullscr=True)
 
-######## CHAT's CODE ##########
-
-
-################ DEFINTE TEXT FUNCTIONS ################
 # Define keys
 SPACE_KEY = 'space'
 ESC_KEY = 'escape'
@@ -105,12 +118,21 @@ def check_for_quit(keys):
         win.close()
         core.quit()
 
-def show_text_screen(text, wait_time=None, allow_skip=False):
+################ DEFINTE TEXT FUNCTIONS ################
+
+def show_text_screen(text, wait_time=None, allow_skip=False, background_color=None):
+    if background_color:
+        win.color = background_color
+    else:
+        win.color = default_color
+
+    #try:
     message = visual.TextStim(win, text=text, color="white", height=30, wrapWidth=1000)
     message.draw()
-    win.flip()  # << You MUST call this to show the drawn stimuli!
+    win.flip()
 
     timer = core.Clock()
+
     while True:
         keys = event.getKeys()
         check_for_quit(keys)
@@ -119,36 +141,102 @@ def show_text_screen(text, wait_time=None, allow_skip=False):
             break
         if wait_time is not None and timer.getTime() > wait_time:
             break
+   # finally:
+    #    win.color = default_color # Always restore window color
+    #    win.flip()
 
-def show_text_with_countdown(text, countdown_seconds, allow_skip = False):
+
+# def show_text_screen(text, wait_time=None, allow_skip=False, background_color=None):
+#     if background_color:
+#         win.color = background_color  # Temporarily change background color
+
+#   #  win2 = visual.Window(fullscr=True, color=color, units="pix")
+#   #  win = visual.Window(fullscr=True, color = color, units="pix")
+#     message = visual.TextStim(win, text=text, color="white", height=30, wrapWidth=1000)
+#     message.draw()
+#     win.flip()  # << You MUST call this to show the drawn stimuli!
+
+#     timer = core.Clock()
+#     while True:
+#         keys = event.getKeys()
+#         check_for_quit(keys)
+
+#         if SPACE_KEY in keys and allow_skip:
+#             break
+#         if wait_time is not None and timer.getTime() > wait_time:
+#             break
+
+def show_text_with_countdown(text, countdown_seconds, allow_skip=False, background_color=None):
+    if background_color:
+        win.color = background_color
+    else:
+        win.color = default_color
+
     timer = core.Clock()
-    
+
+  #  try:
     while True:
         elapsed = timer.getTime()
         remaining = countdown_seconds - elapsed
         if remaining <= 0:
             break
 
-        # Prepare stimuli
         main_text = visual.TextStim(win, text=text, pos=(0, 100), color="white", height=30, wrapWidth=1000)
         timer_text = visual.TextStim(win, text=f"{int(remaining)} sekunder", pos=(0, -100), color="white", height=40)
-        
-        # Draw and flip
+
         main_text.draw()
         timer_text.draw()
         win.flip()
 
-        # Check for quit
         keys = event.getKeys()
         check_for_quit(keys)
 
-        if allow_skip and "space" in keys:
+        if allow_skip and SPACE_KEY in keys:
             break
+    # finally:
+    #     win.color = default_color  # Always restore the original color
+    #     win.flip()
 
+
+# def show_text_with_countdown(text, countdown_seconds, allow_skip = False, background_color=None):
+#     timer = core.Clock()
+
+#     original_color = win.color  # Save the current color
+
+    
+#     if background_color:
+#         win.color = background_color  # Temporarily change background color
+
+#     while True:
+#         elapsed = timer.getTime()
+#         remaining = countdown_seconds - elapsed
+#         if remaining <= 0:
+#             break
+
+#         # Prepare stimuli
+#         main_text = visual.TextStim(win, text=text, pos=(0, 100), color="white", height=30, wrapWidth=1000)
+#         timer_text = visual.TextStim(win, text=f"{int(remaining)} sekunder", pos=(0, -100), color="white", height=40)
+        
+#         # Draw and flip
+#         main_text.draw()
+#         timer_text.draw()
+#         win.flip()
+
+#         win.color = original_color  # Reset to the original color
+
+#         # Check for quit
+#         keys = event.getKeys()
+#         check_for_quit(keys)
+
+#         if allow_skip and "space" in keys:
+#             break
+
+
+############### define visual analogue scale function ###############
 
 def show_vas(question):
     vas_text = visual.TextStim(win, text=question, pos=(0, 200), color="white", height=25)
-    slider = visual.Slider(win, ticks=(0, 25, 50, 75, 100), labels=["Not at all", "", "", "", "Very much"],
+    slider = visual.Slider(win, ticks=(0, 25, 50, 75, 100), labels=["Slet ikke", "", "", "", "Rigtig meget"],
                            granularity=1, size=(800, 50), pos=(0, 0), style='rating', color='white')
 
     while True:
@@ -164,6 +252,7 @@ def show_vas(question):
             core.wait(0.5)  # Optional: brief pause for feedback
             return slider.getRating()
 
+
 ########### define tutorial function ###############
 
 def run_tutorial(tut_text_list):
@@ -173,8 +262,8 @@ def run_tutorial(tut_text_list):
 
     # run hands
     practice_phases = trial_templates["hands"]
-    show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=5)
-    show_text_with_countdown(practice_phases["provocation"], countdown_seconds=30, allow_skip=True)
+    show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=5, background_color='green')
+    show_text_with_countdown(practice_phases["provocation"], countdown_seconds=30, allow_skip=True, background_color='green')
     show_text_screen(practice_phases["recovery"], wait_time=4)
 
     for question in vas_questions:
@@ -184,8 +273,8 @@ def run_tutorial(tut_text_list):
 
     # run abdominal
     practice_phases = trial_templates["abdominal"]
-    show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=5)
-    show_text_with_countdown(practice_phases["provocation"], countdown_seconds=30, allow_skip=True)
+    show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=5, background_color='blue')
+    show_text_with_countdown(practice_phases["provocation"], countdown_seconds=30, allow_skip=True, background_color='blue')
     show_text_screen(practice_phases["recovery"], wait_time=4)
 
     for question in vas_questions:
@@ -196,7 +285,7 @@ def run_tutorial(tut_text_list):
 
 
 ############### define experiment function ###############
-def run_trials():
+def run_experiment():
     show_text_screen(break_text2, wait_time=3)
 
     for i, trial_type in enumerate(trial_types):
@@ -205,9 +294,13 @@ def run_trials():
         # Get the current template
         phases = trial_templates[trial_type]
 
+        # get color
+        bg_color = trial_colors[trial_type]  # Get the trial-specific color
+
+
         # Show anticipation, provocation, recovery
-        show_text_with_countdown(phases["anticipation"], countdown_seconds=5)
-        show_text_with_countdown(phases["provocation"], countdown_seconds=60, allow_skip=True)
+        show_text_with_countdown(phases["anticipation"], countdown_seconds=5, background_color=bg_color)
+        show_text_with_countdown(phases["provocation"], countdown_seconds=60, allow_skip=True, background_color=bg_color)
         show_text_screen(phases["recovery"], wait_time=3)
 
         # VAS questions
@@ -223,93 +316,22 @@ def run_trials():
         # e.g., append to a list of dicts
 
 
-# def run_experiment(exp_text_list):
-#   #  for text in exp_text_list:
-#   #  show_text_screen(text)
-
-#     for i, trial in enumerate(exp_text_list):
-#         show_text_screen(trial, wait_time=5)  # Shows for 5 sec or until space is pressed
-        
-#         if i in [2,4,6,8,10]:#== 2 |  == 0:#== 2:
-#             rating = show_vas("Indsæt spørgsmål her?")
-#             print(f"Rating: {rating}")  # You might store this instead
-
 # --------- MAIN PROGRAM ----------
-
-# Run blocks
-# if show_tutorial == 1:
-#     run_tutorial(tutorial_texts)
-# run_experiment(trial_texts)
 
 if show_tutorial == 1:
     run_tutorial(tutorial_texts)
 
 # run experiment
-run_trials()
+run_experiment()
+
+for question in vas_questions2:
+    show_vas(question)
 
 # End screen
 show_text_screen("Thank you for participating!\n\nPress space to exit.", allow_skip=True)
 win.close()
 core.quit()
 
-
-
-
-########## own code below##########
-# ## --------------- TEXT ------------------- ##
-
-# intro1 = "Velkommen til mave-spændings-eksperimentet. \nTryk på mellemrumstasten for at fortsætte."
-# intro2 = "test test test "
-
-
-
-
-
-# ## ---------------- TUTORIAL ------------------ ##
-# if user_input_tutorial == "1":
-#     # Define text stimuli
-#     instruction_text = visual.TextStim(win, text=intro1, color="white")
-#     # question_text = visual.TextStim(win, text="How happy do you feel?", pos=(0, 0.2), color="white")
-#     instruction_text.draw()
-#     win.flip()
-#     event.waitKeys(keyList=["space"])
-# else:
-#     pass
-
-
-# ## ----------------- EXPERIMENT ------------------ ##
-
-# instruction_text = visual.TextStim(win, text=intro2, color="white")
-# instruction_text.draw()
-# win.flip()
-# event.waitKeys(keyList=["space"])
-# # Define text stimuli
-# #instruction_text = visual.TextStim(win, text=intro1, color="white")
-# # question_text = visual.TextStim(win, text="How happy do you feel?", pos=(0, 0.2), color="white")
-
-# # # Define a visual analogue scale (VAS)
-# # rating_scale = visual.Slider(win, 
-# #                              ticks=[0, 25, 50, 75, 100], 
-# #                              labels=["0", "25", "50", "75", "100"],
-# #                              granularity=1, 
-# #                              style=['rating'], 
-# #                              color='red')
-
-# # Show instruction screen
-# instruction_text.draw()
-# win.flip()
-# event.waitKeys(keyList=["space"])
-
-# # # Show question screen
-# # while rating_scale.noResponse:  # Wait for response
-# #     win.flip()
-# #     question_text.draw()
-# #     rating_scale.draw()
-
 # # # Save the response
 # # response = rating_scale.getRating()
 # # print(f"Participant's rating: {response}")
-
-# # End experiment
-# win.close()
-# core.quit()
