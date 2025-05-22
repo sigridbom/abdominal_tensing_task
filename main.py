@@ -12,8 +12,9 @@
 
 # importing packages
 import pandas as pd
-import sys, random 
+import sys, random, os
 from psychopy import visual, core, event 
+from datetime import datetime
 # if you have issues installing psychopy, install the packages from dependencies.txt
 
 ###### ----------------- setting variables ------------------ ######
@@ -24,6 +25,7 @@ random.shuffle(trial_types)
 
 random_break = random.randint(3, 9)  # Random break between 3 and 9 seconds
 
+# background colors for each trial type and default color
 trial_colors = {
     "hands": "green",
     "abdominal": "blue"
@@ -33,62 +35,94 @@ default_color = "grey"
 #### ----------------- TEXT ------------------ ######
 
 tutorial_texts = [
-        "Velkommen til mave-spændings-eksperimentet. \nTryk på mellemrumstasten for at fortsætte.", 
-        "I dette eksperiment vil du blive bedt om skiftevis at spænde i dine mavemuskler og knytte dine hænder.\n"
-        "Du vil blive bedt om at knytte dine hænder eller spænde dine mavemuskler i et minut ad gangen.\n"
-        "Hvis du ikke kan gøre det så længe, tryk på mellemrumstasten for at vise, at du er stoppet.\n"
+        "Velkommen til mave-spændings-eksperimentet. \n\nTryk på mellemrumstasten for at fortsætte.", 
+
+        "I dette eksperiment vil du blive bedt om skiftevis at knytte dine hænder eller spænde i dine mavemuskler. "
+        "Du vil blive bedt om at knytte dine hænder eller spænde dine mavemuskler i et minut.\n\n"
+        "Hvis du ikke kan gøre det så længe, tryk på mellemrumstasten for at vise, at du er stoppet.\n\n"
         "Du vil derefter blive bedt om at svare på nogle spørgsmål om, hvordan det føltes. Tryk på mellemrumstasten for at fortsætte.",
-        "Vi starter med en prøverunde. Følg instruktionerne på skærmen.\nTryk på mellemrumstasten for at fortsætte."
+
+        "Vi starter med en prøverunde. Følg instruktionerne på skærmen.\n\n"
+        "Når skærmen er grøn, skal du knytte dine hænder.\n Når skærmen er blå, skal du spænde dine mavemuskler.\n\n" 
+        "\nTryk på mellemrumstasten for at fortsætte."
     ]
 
 break_text0 = "+" # intertrial stimulus 
-break_text1 = "Prøverunden er nu slut. I eksperimentet skal du prøve at spænde dine mavemuskler eller knytte din hånd i et minut.\n" \
-"Hvis du ikke kan gøre det så længe, så tryk på mellemrumstasten for at vise, at du er holdt op.\n" \
+break_text1 = "Prøverunden er nu slut. I eksperimentet skal du prøve at spænde dine mavemuskler eller knytte din hånd i et minut.\n\n" \
+"Hvis du ikke kan gøre det så længe, så tryk på mellemrumstasten for at vise, at du er holdt op.\n\n" \
 "Tryk på mellemrumstasten, når du er klar til at starte eksperimentet."
 break_text2 = "Eksperimentet starter nu"
+end_text = "Eksperimentet er nu slut.\n\nTak for din deltagelse!\n\nTryk på mellemrumstasten for at afslutte."
 
 
 trial_templates = {
     "abdominal": {
         "anticipation": "Gør dig klar. Om lidt skal du spænde i dine mavemuskler.",
-        "provocation": "Spænd i dine mavemuskler nu.\nHvis du ikke kan spænde mere, så tryk på mellemrumstasten.",
+        "provocation": "Spænd i dine mavemuskler nu.\n\nHvis du ikke kan spænde mere, så tryk på mellemrumstasten.",
         "recovery": "Slap af i dine mavemuskler."
     },
     "hands": {
         "anticipation": "Gør dig klar. Om lidt skal du knytte dine hænder.",
-        "provocation": "Knyt dine hænder nu.\nHvis du ikke kan knytte dine hænder længere, så tryk på mellemrumstasten.",
+        "provocation": "Knyt dine hænder nu.\n\nHvis du ikke kan knytte dine hænder længere, så tryk på mellemrumstasten.",
         "recovery": "Slap af i dine hænder."
     }
 }
 
-vas_questions = [
-    "Blev du bange/nervøs, da du ventede på at skulle spænde dine mavemuskler eller knytte dine hænder?",
-    "Blev du bange/nervøs, da du spændte dine mavemuskler eller knyttede dine hænder?",
-    "Blev du bange/nervøs, efter du havde spændt dine mavemuskler eller knyttet dine hænder?",
-    "Gjorde det ondt, da du ventede på at skulle spænde dine mavemuskler eller knytte dine hænder?",
-    "Gjorde det ondt, da du spændte dine mavemuskler eller knyttede dine hænder?",
-    "Gjorde det ondt, efter du havde spændt dine mavemuskler eller knyttet dine hænder?",
-    "Havde du lyst til at undgå at spænde dine mavemuskler eller knytte dine hænder, da du ventede på at skulle gøre det?",
-    "Havde du lyst til at undgå at spænde dine mavemuskler eller knytte dine hænder, da du spændte dem/knyttede dine hænder?",
-    "Havde du lyst til at undgå at spænde dine mavemuskler eller knytte dine hænder, efter du havde spændt dem/knyttet dine hænder?"
+vas_questions_exp = {
+    "abdominal": [
+        {
+            "question": "Blev du bange, da du spændte dine mavemuskler?",
+            "labels": ["Slet ikke", "Meget bange"],
+            "type": "fear"
+        },
+        {
+            "question": "Gjorde det ondt, da du spændte dine mavemuskler?",
+            "labels": ["Ingen smerte", "Værst tænkelige smerte"],
+            "type": "pain"
+        },
+        {
+            "question": "Havde du lyst til at undgå at spænde dine mavemuskler?",
+            "labels": ["Slet ikke", "Rigtig meget"],
+            "type": "avoidance"
+        }
+    ],
+    "hands": [
+        {
+            "question": "Blev du bange, da du knyttede dine hænder?",
+            "labels": ["Slet ikke", "Meget bange"],
+            "type": "fear"
+        },
+        {
+            "question": "Gjorde det ondt, da du knyttede dine hænder?",
+            "labels": ["Ingen smerte", "Værst tænkelige smerte"],
+            "type": "pain"
+        },
+        {
+            "question": "Havde du lyst til at undgå at knytte dine hænder?",
+            "labels": ["Slet ikke", "Rigtig meget"],
+            "type": "avoidance"
+        }
+    ]
+}
+
+vas_questions_end = [
+    {
+        "question": "Oplevede du, at det at spænde i dine mavemuskler er ligesom når du har ondt i maven?",
+        "labels": ["Slet ikke", "Rigtig meget"],
+        "type": "similarity"
+    },
+    {
+        "question": "Synes du opgaven var svær?",
+        "labels": ["Ikke svær", "Meget svær"],
+        "type": "difficulty"
+    },
+    {
+        "question": "Synes du opgaven var ubehagelig?",
+        "labels": ["Ikke ubehagelig", "Meget ubehagelig"],
+        "type": "discomfort"
+    }
 ]
 
-vas_questions2 = [
-    "Marké på skalaen nedenfor i hvilken grad det, du kunne mærke før du skulle spænde i dine mavemuskler, kan sammenlignes med det du kan mærke i din mave, før du får ondt.",
-    "Markér på skalaen nedenfor i hvilken grad det, at spænde i dine mavemuskler, kan sammenlignes med det du kan mærke, når du har ondt i maven.",
-]
-
-# trial_texts = [
-#         "VENT\n Om lidt skal du spænde i dine mavemuskler.",
-#         "Spænd i dine mavemuskler.", # add timer 
-#         "Slap af i maven. Forsøget fortsætter om lidt.", # 2
-#         "VENT\n Om lidt skal du spænde i dine mavemuskler.",
-#         "Spænd i dine mavemuskler.", # add timer 
-#         "Slap af i maven. Forsøget fortsætter om lidt.", # 5
-#         "VENT\n Om lidt skal du spænde i dine mavemuskler.",
-#         "Spænd i dine mavemuskler.", # add timer 
-#         "Slap af i maven. Forsøget fortsætter om lidt." # 8, 11, 14
-#     ]
 
 ## ------------------USER INPUT ------------------ ##
 
@@ -99,10 +133,11 @@ except ValueError:
     core.quit()
 
 
-#user_input_ID =input("Participant ID:")
-#show_tutorial = int(input("Tutorial (1 = yes /0 = no)?:"))
-#participant_ID = input("Participant ID:")
+participant_ID = input("Participant ID:")
 
+experiment_start = datetime.now()
+
+experiment_data = []
 
 ###### ----------------- Create window and save keys ------------------ ######
 # # Create a window
@@ -146,26 +181,6 @@ def show_text_screen(text, wait_time=None, allow_skip=False, background_color=No
     #    win.flip()
 
 
-# def show_text_screen(text, wait_time=None, allow_skip=False, background_color=None):
-#     if background_color:
-#         win.color = background_color  # Temporarily change background color
-
-#   #  win2 = visual.Window(fullscr=True, color=color, units="pix")
-#   #  win = visual.Window(fullscr=True, color = color, units="pix")
-#     message = visual.TextStim(win, text=text, color="white", height=30, wrapWidth=1000)
-#     message.draw()
-#     win.flip()  # << You MUST call this to show the drawn stimuli!
-
-#     timer = core.Clock()
-#     while True:
-#         keys = event.getKeys()
-#         check_for_quit(keys)
-
-#         if SPACE_KEY in keys and allow_skip:
-#             break
-#         if wait_time is not None and timer.getTime() > wait_time:
-#             break
-
 def show_text_with_countdown(text, countdown_seconds, allow_skip=False, background_color=None):
     if background_color:
         win.color = background_color
@@ -182,7 +197,7 @@ def show_text_with_countdown(text, countdown_seconds, allow_skip=False, backgrou
             break
 
         main_text = visual.TextStim(win, text=text, pos=(0, 100), color="white", height=30, wrapWidth=1000)
-        timer_text = visual.TextStim(win, text=f"{int(remaining)} sekunder", pos=(0, -100), color="white", height=40)
+        timer_text = visual.TextStim(win, text=f"{int(remaining)} sekunder", pos=(0, -60), color="white", height=30) #-100 før
 
         main_text.draw()
         timer_text.draw()
@@ -193,51 +208,26 @@ def show_text_with_countdown(text, countdown_seconds, allow_skip=False, backgrou
 
         if allow_skip and SPACE_KEY in keys:
             break
-    # finally:
-    #     win.color = default_color  # Always restore the original color
-    #     win.flip()
-
-
-# def show_text_with_countdown(text, countdown_seconds, allow_skip = False, background_color=None):
-#     timer = core.Clock()
-
-#     original_color = win.color  # Save the current color
-
-    
-#     if background_color:
-#         win.color = background_color  # Temporarily change background color
-
-#     while True:
-#         elapsed = timer.getTime()
-#         remaining = countdown_seconds - elapsed
-#         if remaining <= 0:
-#             break
-
-#         # Prepare stimuli
-#         main_text = visual.TextStim(win, text=text, pos=(0, 100), color="white", height=30, wrapWidth=1000)
-#         timer_text = visual.TextStim(win, text=f"{int(remaining)} sekunder", pos=(0, -100), color="white", height=40)
-        
-#         # Draw and flip
-#         main_text.draw()
-#         timer_text.draw()
-#         win.flip()
-
-#         win.color = original_color  # Reset to the original color
-
-#         # Check for quit
-#         keys = event.getKeys()
-#         check_for_quit(keys)
-
-#         if allow_skip and "space" in keys:
-#             break
-
 
 ############### define visual analogue scale function ###############
 
-def show_vas(question):
-    vas_text = visual.TextStim(win, text=question, pos=(0, 200), color="white", height=25)
-    slider = visual.Slider(win, ticks=(0, 25, 50, 75, 100), labels=["Slet ikke", "", "", "", "Rigtig meget"],
-                           granularity=1, size=(800, 50), pos=(0, 0), style='rating', color='white')
+def show_vas(question, labels):
+
+    # show text
+    vas_text = visual.TextStim(win, text=question, pos=(0, 200), color="white", height=30, wrapWidth=1000)
+
+    # show slider
+    slider = visual.Slider(win, ticks=(0,100), 
+                           labels=labels, 
+                           granularity=0, #continuous scale = VAS
+                           size=(600, 50), #width, height of scale 
+                           pos=(0, 0), # position on the screen - center 
+                           labelHeight=25, # label text size
+                           style='rating', # style of slider
+                           color='white')
+
+    # slider = visual.Slider(win, ticks=(0, 25, 50, 75, 100), labels=labels,
+    #                        granularity=1, size=(800, 50), pos=(0, 0), style='rating', color='white')
 
     while True:
         vas_text.draw()
@@ -249,7 +239,7 @@ def show_vas(question):
 
         # Exit as soon as a rating is selected
         if slider.getRating() is not None and slider.rating is not None:
-            core.wait(0.5)  # Optional: brief pause for feedback
+           # core.wait(0.5)  # Optional: brief pause for feedback
             return slider.getRating()
 
 
@@ -266,8 +256,11 @@ def run_tutorial(tut_text_list):
     show_text_with_countdown(practice_phases["provocation"], countdown_seconds=30, allow_skip=True, background_color='green')
     show_text_screen(practice_phases["recovery"], wait_time=4)
 
-    for question in vas_questions:
-        show_vas(question)
+    # # VAS questions
+    for idx in vas_questions_exp["hands"]:
+        rating = show_vas(idx["question"], idx["labels"])
+        print(f"VAS Response [hands]: {idx['type']} = {rating}")
+
 
     show_text_screen(break_text0, wait_time= random_break) # intertrial interval
 
@@ -277,8 +270,10 @@ def run_tutorial(tut_text_list):
     show_text_with_countdown(practice_phases["provocation"], countdown_seconds=30, allow_skip=True, background_color='blue')
     show_text_screen(practice_phases["recovery"], wait_time=4)
 
-    for question in vas_questions:
-        show_vas(question)
+    # VAS questions
+    for idx in vas_questions_exp["abdominal"]:
+        rating = show_vas(idx["question"], idx["labels"])
+        print(f"VAS Response [abdominal]: {idx['type']} = {rating}")
 
     # outro from tutorial text
     show_text_screen(break_text1, allow_skip=True) 
@@ -304,17 +299,66 @@ def run_experiment():
         show_text_screen(phases["recovery"], wait_time=3)
 
         # VAS questions
-        ratings = {}
-        for question in vas_questions:
-            rating = show_vas(question)
-            ratings[question] = rating
-            print(f"VAS Response: {question} = {rating}")
+        vas_ratings = {}
+        for idx in vas_questions_exp[trial_type]:
+            rating = show_vas(idx["question"], idx["labels"])
+            vas_ratings[idx["type"]] = rating
+            print(f"VAS Response [{trial_type}]: {idx['type']} = {rating}")
+   
+         # Prepare trial data dictionary
+        trial_data = {
+            "participant_ID": participant_ID,
+            "trial_number": i + 1,
+            "trial_type": trial_type
+           # "tensing_duration": tensing_duration,
+            #"trial_start": provocation_start.strftime("%Y-%m-%d %H:%M:%S"),
+            #"trial_end": provocation_end.strftime("%Y-%m-%d %H:%M:%S"),
+           # "experiment_start": experiment_start.strftime("%Y-%m-%d %H:%M:%S"),
+            #"experiment_date": experiment_start.strftime("%Y-%m-%d")
+        }
+
+        # Add VAS ratings to trial data
+        trial_data.update(vas_ratings)
+
+        experiment_data.append(trial_data)
+
 
         show_text_screen(break_text0, wait_time=random_break)  # ITI
 
         # Optionally store ratings per trial
         # e.g., append to a list of dicts
 
+
+########## SAVE DATA FUNCTION ##########
+
+def save_data(vas_ratings_end):
+   # filename = f"provocation_task_{participant_ID}.csv"
+    # Append the end-of-experiment VAS questions as a summary row
+    end_row = {
+        "participant_ID": participant_ID,
+        "trial_number": "end",
+        "trial_type": "end_questions"
+    }
+    end_row.update(vas_ratings_end)
+    experiment_data.append(end_row)
+
+    df = pd.DataFrame(experiment_data)
+
+    # Add metadata columns
+    df["experiment_date"] = experiment_start.strftime("%Y-%m-%d")
+    df["experiment_start_time"] = experiment_start.strftime("%H:%M:%S")
+    df["experiment_end_time"] = experiment_end.strftime("%H:%M:%S")
+
+    # Ensure 'data' directory exists
+    data_folder = "data"
+    if not os.path.exists(data_folder):
+        os.makedirs(data_folder)
+
+    filename = f"provocation_participant_{participant_ID}_{experiment_start.strftime('%Y%m%d_%H%M%S')}.csv"
+    filepath = os.path.join(data_folder, filename)
+    df.to_csv(filepath, index=False)
+   # df.to_csv(filename, index=False)
+    print(f"Data saved to {filename}")
 
 # --------- MAIN PROGRAM ----------
 
@@ -324,14 +368,21 @@ if show_tutorial == 1:
 # run experiment
 run_experiment()
 
-for question in vas_questions2:
-    show_vas(question)
+# end of experiment questions
+vas_ratings_end = {}
+for idx in vas_questions_end:
+    rating = show_vas(idx["question"], idx["labels"])
+    vas_ratings_end[idx["type"]] = rating
+    print(f"VAS Response: {idx['type']} = {rating}")
+
 
 # End screen
-show_text_screen("Thank you for participating!\n\nPress space to exit.", allow_skip=True)
+show_text_screen(end_text, allow_skip=True)
+experiment_end = datetime.now()
+
+# save data from experiment
+save_data(vas_ratings_end)
+
 win.close()
 core.quit()
 
-# # # Save the response
-# # response = rating_scale.getRating()
-# # print(f"Participant's rating: {response}")
