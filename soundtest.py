@@ -1,4 +1,4 @@
-# soundtest.py
+
 # This script plays a short beep sound using Pygame's mixer module and a .wav file found in the "stimuli" folder 
 
 import pygame
