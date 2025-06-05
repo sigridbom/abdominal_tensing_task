@@ -3,7 +3,7 @@
 # Created by: Sigrid Bom Nielsen, PhD-student at Aarhus University, Denmark
 # Date: 2025-04-01
 
-# comments
+# comments / last changes:
 #-
 #-
 #-
@@ -11,19 +11,19 @@
 #------------------------- PACKAGES -------------------------#
 
 # importing packages
-import pandas as pd
 import sys, random, os
-from psychopy import visual, core, event, sound
 from datetime import datetime
-# if you have issues installing psychopy, install the packages from dependencies.txt
+import pandas as pd
 import pygame
+from psychopy import visual, core, event, sound
+# if you have issues installing psychopy, install the packages from dependencies.txt
+
 
 ###### ----------------- setting variables ------------------ ######
 
-trials_number = 6  # trial number in total - must be an even number for balanced randomization
-#trial_types = ["abdominal", "hands"] * (NUM_TRIALS // 2)
-#random.shuffle(trial_types)
-
+trials_number = 10  # trial number in total - must be an even number for balanced randomization
+max_provoke_duration = 60  # maximum duration for the provocation phase in seconds
+tutorial_provoke_duration = 30  # duration for the provocation phase in the tutorial in seconds
 tutorial_trial_types = ["hands", "abdominal"]  # for the tutorial, we only use one of each type and we start with hands
 
 
@@ -32,10 +32,13 @@ trial_colors = {
     "hands": "green",
     "abdominal": "blue"
 }
-
 default_color = "grey"
 
 save_tutorial_data = True  # Set to True if you want to save tutorial data, False otherwise
+
+# Define keys
+SPACE_KEY = 'space'
+ESC_KEY = 'escape'
 
 ####------------------ setting paths/variables you shouldn't change ------------------####
 
@@ -161,28 +164,33 @@ vas_questions_end = [
 
 ## ------------------USER INPUT ------------------ ##
 
-try:
-    show_tutorial = int(input("Tutorial (1 = yes / 0 = no)?: "))
-except ValueError:
-    print("Invalid input. Please enter 1 or 0.")
-    core.quit()
+def get_yes_no_input(prompt):
+    while True:
+        user_input = input(prompt).strip()
+        if user_input in ('0', '1'):
+            return int(user_input)
+        print("Invalid input. Please enter 1 (yes) or 0 (no).")
 
-participant_ID = input("Participant ID:")
+show_tutorial = get_yes_no_input("Tutorial (1 = yes / 0 = no)?: ")
+#participant_ID = input("Participant ID:").strip()
 
-###### ----------------- Create window and save keys ------------------ ######
-experiment_start = datetime.now()
+while True:
+    participant_ID = input("Participant ID:").strip()
+    if " " in participant_ID:
+        print("Invalid ID: spaces are not allowed. Please try again.")
+    elif participant_ID == "":
+        print("Invalid ID: input cannot be empty. Please try again.")
+    else:
+        break
 
-tutorial_data = []
-experiment_data = []
+
+###### ----------------- Create window and define quit with esc ------------------ ######
+
 
 # # Create a window
 win = visual.Window(fullscr=True, color = default_color, units="pix")
-#win = visual.Window(size=[800, 600], color="black", fullscr=True)
 
-# Define keys
-SPACE_KEY = 'space'
-ESC_KEY = 'escape'
-
+# always close the window and quit the experiment on ESC key
 def check_for_quit(keys):
     if ESC_KEY in keys:
         win.close()
@@ -196,7 +204,6 @@ def show_text_screen(text, wait_time=None, allow_skip=False, background_color=No
     else:
         win.color = default_color
 
-    #try:
     message = visual.TextStim(win, text=text, color="white", height=30, wrapWidth=1000)
     message.draw()
     win.flip()
@@ -211,9 +218,6 @@ def show_text_screen(text, wait_time=None, allow_skip=False, background_color=No
             break
         if wait_time is not None and timer.getTime() > wait_time:
             break
-   # finally:
-    #    win.color = default_color # Always restore window color
-    #    win.flip()
 
 
 def show_text_with_countdown(text, countdown_seconds, allow_skip=False, background_color=None):
@@ -224,7 +228,6 @@ def show_text_with_countdown(text, countdown_seconds, allow_skip=False, backgrou
 
     timer = core.Clock()
 
-  #  try:
     while True:
         elapsed = timer.getTime()
         remaining = countdown_seconds - elapsed
@@ -277,10 +280,14 @@ def show_vas(question, labels):
 
 ############# define provocation task function #############
 
-def run_provocation_phase_with_timing(text, max_duration=60, background_color=None):
+def run_provocation_phase_with_timing(text, max_duration, background_color=None):
     """
     Displays a provocation screen for a maximum duration.
-    Returns the duration the participant held the tension, and start/end timestamps.
+
+    Parameters:
+    - text (str): Instruction text displayed during provocation.
+    - max_duration (int): Maximum duration of provocation in seconds.
+    - background_color (str): Background color for the screen.
     """
     if background_color:
         win.color = background_color
@@ -302,7 +309,7 @@ def run_provocation_phase_with_timing(text, max_duration=60, background_color=No
         if remaining <= 0:
             break
 
-        # Draw provocation message and countdown
+        # Draw provocation message (commented out timer text is with visible countdown)
         main_text = visual.TextStim(win, text=text, pos=(0, 100), color="white", height=30, wrapWidth=1000)
        # timer_text = visual.TextStim(win, text=f"{int(remaining)} sekunder", pos=(0, -60), color="white", height=30)
 
@@ -329,11 +336,17 @@ def run_provocation_phase_with_timing(text, max_duration=60, background_color=No
 
 ########### define tutorial function ###############
 
-def run_tutorial(tut_text_list):
+def run_tutorial(tutorial_data_list):
+    """
+    Displays tutorial text screens and runs practice trials for each trial type.
+
+    Parameters:
+    - tutorial_data_list (list): List to store data.
+    """
     tutorial_start_time = datetime.now().strftime("%H:%M:%S")
 
-    for i, text in enumerate(tut_text_list):
-        print(f"Tutorial screen {i+1} of {len(tut_text_list)}")  # Optional debug
+    for i, text in enumerate(tutorial_texts):
+        print(f"Tutorial screen {i+1} of {len(tutorial_texts)}")  # Optional debug
         show_text_screen(text, allow_skip=True) 
 
 
@@ -343,14 +356,14 @@ def run_tutorial(tut_text_list):
         # Get the current template
         practice_phases = trial_templates[trial_type]
 
-        # get color
-        bg_color = trial_colors[trial_type]  # Get the trial-specific color
+        # get trial specific background color
+        bg_color = trial_colors[trial_type]  
 
         show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=5, background_color=bg_color)
 
         duration_sec, start_time, end_time = run_provocation_phase_with_timing(
             text=practice_phases["provocation"],
-            max_duration=60,
+            max_duration=tutorial_provoke_duration,
             background_color=bg_color
         )
         print(f"Practice {trial_type} duration: {duration_sec} seconds")
@@ -386,54 +399,20 @@ def run_tutorial(tut_text_list):
     # outro from tutorial text
     show_text_screen(break_text1, allow_skip=True) 
 
-    # run hands
-#    practice_phases = trial_templates["hands"]
-   # show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=5, background_color=trial_colors["hands"])
-
-    # Run provocation and record timing
-    # duration_sec, start_time, end_time = run_provocation_phase_with_timing(
-    #         text=practice_phases["provocation"],
-    #         max_duration=60,
-    #         background_color=trial_colors["hands"])
-
-    # print(f"Practice Hands Duration: {duration_sec} seconds")
-
-    #show_text_with_countdown(practice_phases["provocation"], countdown_seconds=30, allow_skip=True, background_color='green')
-    # show_text_screen(practice_phases["recovery"], wait_time=4)
-
-    # # # VAS questions
-    # for idx in vas_questions_exp["hands"]:
-    #     rating = show_vas(idx["question"], idx["labels"])
-    #     print(f"VAS Response [hands]: {idx['type']} = {rating}")
-
-
-   # show_text_screen(break_text0, wait_time= random_break) # intertrial interval
-
-    # run abdominal
-    # practice_phases = trial_templates["abdominal"]
-    # show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=5, background_color=trial_colors["abdominal"])
-    # #show_text_with_countdown(practice_phases["provocation"], countdown_seconds=30, allow_skip=True, background_color='blue')
-
-    # duration_sec, start_time, end_time = run_provocation_phase_with_timing(
-    #         text=practice_phases["provocation"],
-    #         max_duration=60,
-    #         background_color=trial_colors["abdominal"])
-    
-    # print(f"Practice Abdominal Duration: {duration_sec} seconds")  # Optional debug
-
-    # show_text_screen(practice_phases["recovery"], wait_time=4)
-
-    # # VAS questions
-    # for idx in vas_questions_exp["abdominal"]:
-    #     rating = show_vas(idx["question"], idx["labels"])
-    #     print(f"VAS Response [abdominal]: {idx['type']} = {rating}")
-
-    # outro from tutorial text
-    # show_text_screen(break_text1, allow_skip=True) 
 
 
 ############### define experiment function ###############
-def run_experiment():
+def run_experiment(experiment_data_list):
+    """
+    Runs the main experiment, displaying text screens (with or without countdowns),
+    and collecting VAS ratings for each trial type.
+
+    Parameters:
+    - experiment_data_list (list): List to store trial data.
+    
+    Returns:
+    - experiment_data_list (list): Updated list with trial data.
+    """
     show_text_screen(break_text2, wait_time=3)
 
     for i, trial_type in enumerate(trial_types):
@@ -454,7 +433,7 @@ def run_experiment():
         # Run provocation and record timing
         duration_sec, start_time, end_time = run_provocation_phase_with_timing(
             text=phases["provocation"],
-            max_duration=60,
+            max_duration=max_provoke_duration,
             background_color=bg_color
         )
 
@@ -477,11 +456,6 @@ def run_experiment():
             "provocation_duration_sec": duration_sec,
             "provocation_start_time": start_time,
             "provocation_end_time": end_time
-           # "tensing_duration": tensing_duration,
-            #"trial_start": provocation_start.strftime("%Y-%m-%d %H:%M:%S"),
-            #"trial_end": provocation_end.strftime("%Y-%m-%d %H:%M:%S"),
-           # "experiment_start": experiment_start.strftime("%Y-%m-%d %H:%M:%S"),
-            #"experiment_date": experiment_start.strftime("%Y-%m-%d")
         }
 
         # Add VAS ratings to trial data
@@ -489,17 +463,12 @@ def run_experiment():
 
         experiment_data.append(trial_data)
 
-
         show_text_screen(break_text0, wait_time=random_break)  # ITI
-
-        # Optionally store ratings per trial
-        # e.g., append to a list of dicts
 
 
 ########## SAVE DATA FUNCTION ##########
 
-def save_data(vas_ratings_end):
-   # filename = f"provocation_task_{participant_ID}.csv"
+def save_data(experiment_data, tutorial_data, vas_ratings_end):
     # Append the end-of-experiment VAS questions as a summary row
     end_row = {
         "participant_ID": participant_ID,
@@ -515,9 +484,8 @@ def save_data(vas_ratings_end):
         all_data = experiment_data
 
     df = pd.DataFrame(all_data)
-    #df = pd.DataFrame(experiment_data)
 
-    timestamp = experiment_start.strftime('%Y%m%d_%H%M%S')
+    timestamp = experiment_start.strftime('%Y%m%d_%H%M')
 
     # Add metadata columns
     df["experiment_date"] = experiment_start.strftime("%Y-%m-%d")
@@ -529,19 +497,24 @@ def save_data(vas_ratings_end):
     if not os.path.exists(data_folder):
         os.makedirs(data_folder)
 
-    filename = f"provocation_participant_{participant_ID}_{timestamp}.csv"
+    # Save DataFrame to CSV
+    filename = f"recordID_{participant_ID}_provocation_{timestamp}.csv"
     filepath = os.path.join(data_folder, filename)
     df.to_csv(filepath, index=False)
-   # df.to_csv(filename, index=False)
     print(f"Data saved to {filename}")
 
 # --------- MAIN PROGRAM ----------
+experiment_start = datetime.now()
+
+tutorial_data = []
+experiment_data = []
+
 
 if show_tutorial == 1:
-    run_tutorial(tutorial_texts)
+    run_tutorial(tutorial_data)
 
 # run experiment
-run_experiment()
+run_experiment(experiment_data)
 
 # end of experiment questions
 vas_ratings_end = {}
@@ -550,13 +523,12 @@ for idx in vas_questions_end:
     vas_ratings_end[idx["type"]] = rating
     print(f"VAS Response: {idx['type']} = {rating}")
 
-
 # End screen
 show_text_screen(end_text, allow_skip=True)
 experiment_end = datetime.now()
 
 # save data from experiment
-save_data(vas_ratings_end)
+save_data(experiment_data, tutorial_data, vas_ratings_end)
 
 win.close()
 core.quit()
