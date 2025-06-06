@@ -22,7 +22,7 @@ from psychopy import visual, core, event, sound
 ###### ----------------- setting variables ------------------ ######
 
 trials_number = 2  # trial number in total - must be an even number for balanced randomization
-max_provoke_duration = 60  # maximum duration for the provocation phase in seconds
+exp_provoke_duration = 60  # maximum duration for the provocation phase in the experiment in seconds
 tutorial_provoke_duration = 30  # duration for the provocation phase in the tutorial in seconds
 tutorial_trial_types = ["hands", "abdominal"]  # for the tutorial, we only use one of each type and we start with hands
 
@@ -436,7 +436,7 @@ def run_experiment(experiment_data_list):
         # Run provocation and record timing
         duration_sec, start_time, end_time = run_provocation_phase_with_timing(
             text=phases["provocation"],
-            max_duration=max_provoke_duration,
+            max_duration=exp_provoke_duration,
             background_color=bg_color
         )
 
