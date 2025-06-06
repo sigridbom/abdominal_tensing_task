@@ -21,7 +21,7 @@ from psychopy import visual, core, event, sound
 
 ###### ----------------- setting variables ------------------ ######
 
-trials_number = 10  # trial number in total - must be an even number for balanced randomization
+trials_number = 2  # trial number in total - must be an even number for balanced randomization
 max_provoke_duration = 60  # maximum duration for the provocation phase in seconds
 tutorial_provoke_duration = 30  # duration for the provocation phase in the tutorial in seconds
 tutorial_trial_types = ["hands", "abdominal"]  # for the tutorial, we only use one of each type and we start with hands
@@ -71,18 +71,21 @@ trial_types = generate_trials(trials_number)
 #### ----------------- TEXT ------------------ ######
 
 tutorial_texts = [
-        "Velkommen til mave-spændings-eksperimentet. \n\nTryk på mellemrumstasten for at fortsætte.", 
+        "Velkommen til mave-spændings-eksperimentet. \n\nTryk på mellemrumstasten for at fortsætte.", # screen 1 
 
-        "I dette eksperiment vil du blive bedt om skiftevis at knytte dine hænder eller spænde i dine mavemuskler. "
-        "Du vil blive bedt om at knytte dine hænder eller spænde dine mavemuskler i et minut.\n\n"
+        "I dette eksperiment skal du skiftevis knytte dine hænder eller spænde i dine mavemuskler. ", # screen 2
+        
+        "Du skal knytte dine hænder eller spænde dine mavemuskler i et minut.\n\n"
         "Hvis du ikke kan gøre det så længe, tryk på mellemrumstasten for at vise, at du er stoppet.\n\n"
-        "Du vil derefter blive bedt om at svare på nogle spørgsmål om, hvordan det føltes. Tryk på mellemrumstasten for at fortsætte.",
+        "Du bedes derefter svare på nogle spørgsmål om, hvordan det føltes. Tryk på mellemrumstasten for at fortsætte.", # screen 3
 
-        "Vi starter med en prøverunde.\n\n"# Følg instruktionerne på skærmen.\n\n"
-        "Når skærmen er grøn, skal du knytte dine hænder.\n Når skærmen er blå, skal du spænde dine mavemuskler.\n\n"
-        "Når du skal knytte dine hænder eller spænde dine mavemuskler, vil du høre en kort bip tone. Du hører lyden igen, når der er gået et minut, eller hvis du stopper før tid.\n\n"
+        "Når skærmen er grøn, skal du knytte dine hænder.\n Når skærmen er blå, skal du spænde dine mavemuskler.\n\n" # screen 4
+        "Det står altid på skærmen, hvad du skal gøre.\n\n"
+        "Når du skal knytte dine hænder eller spænde dine mavemuskler, vil du høre en kort bip tone. Du hører lyden igen, når der er gået et minut, eller hvis du stopper før tid.\n\n",
+        
+        "Vi starter med en prøverunde.\n\n" # screen 5
         "I prøverunden skal du kun knytte dine hænder eller spænde dine mavemuskler i 30 sekunder.\n\n"
-        "\nTryk på mellemrumstasten for at fortsætte."
+        "\nTryk på mellemrumstasten for at starte prøverunden."
     ]
 
 break_text0 = "+" # intertrial stimulus 
@@ -145,11 +148,6 @@ vas_questions_exp = {
 
 vas_questions_end = [
     {
-        "question": "Oplevede du, at det at spænde i dine mavemuskler er ligesom når du har ondt i maven?",
-        "labels": ["Slet ikke", "Rigtig meget"],
-        "type": "similarity"
-    },
-    {
         "question": "Synes du opgaven var svær?",
         "labels": ["Ikke svær", "Meget svær"],
         "type": "difficulty"
@@ -158,6 +156,11 @@ vas_questions_end = [
         "question": "Synes du opgaven var ubehagelig?",
         "labels": ["Ikke ubehagelig", "Meget ubehagelig"],
         "type": "discomfort"
+    },
+    {
+        "question": "Oplevede du, at det at spænde i dine mavemuskler er ligesom, når du har ondt i maven?",
+        "labels": ["Slet ikke", "Rigtig meget"],
+        "type": "similarity"
     }
 ]
 
