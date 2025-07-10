@@ -1,0 +1,10 @@
+../Programmierung
+env_abdominal/
+main_pygame.py
+test_pygame.py
+.test_env
+.venv
+dependencies.txt
+notes.rtf
+data/
+to_be_deleted/

@@ -21,7 +21,7 @@ from psychopy import visual, core, event, sound
 
 ###### ----------------- setting variables ------------------ ######
 
-trials_number = 2  # trial number in total - must be an even number for balanced randomization
+trials_number = 8  # trial number in total - must be an even number for balanced randomization
 exp_provoke_duration = 60  # maximum duration for the provocation phase in the experiment in seconds
 tutorial_provoke_duration = 30  # duration for the provocation phase in the tutorial in seconds
 tutorial_trial_types = ["hands", "abdominal"]  # for the tutorial, we only use one of each type and we start with hands
@@ -75,17 +75,19 @@ tutorial_texts = [
 
         "I dette eksperiment skal du skiftevis knytte dine hænder eller spænde i dine mavemuskler. ", # screen 2
         
-        "Du skal knytte dine hænder eller spænde dine mavemuskler i et minut.\n\n"
+        "Du skal knytte dine hænder eller spænde dine mavemuskler i et minut ad gangen.\n\n"
         "Hvis du ikke kan gøre det så længe, tryk på mellemrumstasten for at vise, at du er stoppet.\n\n"
+        "Husk at trække vejret normalt.\n\n"
         "Du bedes derefter svare på nogle spørgsmål om, hvordan det føltes. Tryk på mellemrumstasten for at fortsætte.", # screen 3
 
-        "Når skærmen er grøn, skal du knytte dine hænder.\n Når skærmen er blå, skal du spænde dine mavemuskler.\n\n" # screen 4
+        "Når skærmen er grøn, skal du knytte dine hænder.\n\nNår skærmen er blå, skal du spænde dine mavemuskler.\n\n" # screen 4
         "Det står altid på skærmen, hvad du skal gøre.\n\n"
         "Når du skal knytte dine hænder eller spænde dine mavemuskler, vil du høre en kort bip tone. Du hører lyden igen, når der er gået et minut, eller hvis du stopper før tid.\n\n",
         
         "Vi starter med en prøverunde.\n\n" # screen 5
         "I prøverunden skal du kun knytte dine hænder eller spænde dine mavemuskler i 30 sekunder.\n\n"
-        "\nTryk på mellemrumstasten for at starte prøverunden."
+        "Hvis du har nogen spørgsmål, kan du stille dem til forsøgslederen nu.\n\n"
+        "Tryk på mellemrumstasten for at starte prøverunden."
     ]
 
 break_text0 = "+" # intertrial stimulus 
@@ -158,9 +160,14 @@ vas_questions_end = [
         "type": "discomfort"
     },
     {
+        "question": "Oplevede du, at det at knytte dine hænder er ligesom, når du har ondt i maven?",
+        "labels": ["Slet ikke", "Rigtig meget"],
+        "type": "similarity_hands"
+    },
+    {
         "question": "Oplevede du, at det at spænde i dine mavemuskler er ligesom, når du har ondt i maven?",
         "labels": ["Slet ikke", "Rigtig meget"],
-        "type": "similarity"
+        "type": "similarity_abdominal"
     }
 ]
 
@@ -200,6 +207,46 @@ def check_for_quit(keys):
         core.quit()
 
 ################ DEFINTE TEXT FUNCTIONS ################
+
+# def show_text_screen(text, wait_time=None, allow_skip=False, background_color=None, centered=True):
+#     if background_color:
+#         win.color = background_color
+#     else:
+#         win.color = default_color
+
+#     # Set text alignment and position
+#     if centered:
+#         align = 'center'
+#       #  pos = (0, 0)
+#     else:
+#         align = 'left'
+#         #pos = (-0.8, 0.4)  # Adjust position based on your screen units
+
+#     message = visual.TextStim(
+#         win,
+#         text=text,
+#         color='white',
+#         height=30,         # Use relative height like 0.05 if using 'height' units
+#         wrapWidth=1000,       # Adjust for line wrapping
+#        # pos=(0,0),
+#         alignText=align#,     # Newer PsychoPy uses alignText for alignment
+#         #units='height'       # Optional: can be 'norm', 'pix', etc.
+#     )
+
+#     message.draw()
+#     win.flip()
+
+#     timer = core.Clock()
+
+#     while True:
+#         keys = event.getKeys()
+#         check_for_quit(keys)
+
+#         if SPACE_KEY in keys and allow_skip:
+#             break
+#         if wait_time is not None and timer.getTime() > wait_time:
+#             break
+
 
 def show_text_screen(text, wait_time=None, allow_skip=False, background_color=None):
     if background_color:
@@ -350,7 +397,7 @@ def run_tutorial(tutorial_data_list):
 
     for i, text in enumerate(tutorial_texts):
         print(f"Tutorial screen {i+1} of {len(tutorial_texts)}")  # Optional debug
-        show_text_screen(text, allow_skip=True) 
+        show_text_screen(text, allow_skip=True)#, centered=False) 
 
 
     for i, trial_type in enumerate(tutorial_trial_types):
@@ -511,7 +558,6 @@ experiment_start = datetime.now()
 
 tutorial_data = []
 experiment_data = []
-
 
 if show_tutorial == 1:
     run_tutorial(tutorial_data)
