@@ -2,6 +2,11 @@
 
 VENV_DIR=".venv"
 
+if ! command -v python3.10 &> /dev/null; then
+    echo "Python 3.10 could not be found. Please install it first."
+    exit 1
+fi
+
 if [ ! -d "$VENV_DIR" ]; then
   echo "Creating virtual environment..."
   python3.10 -m venv "$VENV_DIR"
