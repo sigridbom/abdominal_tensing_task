@@ -21,7 +21,7 @@ from psychopy import visual, core, event, sound
 
 ###### ----------------- setting variables ------------------ ######
 
-trials_number = 2  # trial number in total - must be an even number for balanced randomization
+trials_number = 8  # trial number in total - must be an even number for balanced randomization
 exp_provoke_duration = 60  # maximum duration for the provocation phase in the experiment in seconds
 tutorial_provoke_duration = 30  # duration for the provocation phase in the tutorial in seconds
 tutorial_trial_types = ["hands", "abdominal"]  # for the tutorial, we only use one of each type and we start with hands
@@ -740,16 +740,14 @@ def run_experiment(experiment_data_list):
 
 ########## SAVE DATA FUNCTION ##########
 
-def save_data(experiment_data, tutorial_data, questions_binary_ratings, question_ratings_end):
+def save_data(experiment_data, tutorial_data, question_ratings_end):
     # Append the end-of-experiment questions as a summary row
     end_row = {
         "participant_ID": participant_ID,
         "trial_number": "end",
         "trial_type": "end_questions"
     }
-    end_row.update(questions_binary_ratings)
-   # end_row.update(questions_hands_ratings)
-   # end_row.update(questions_abdominal_ratings)
+
     end_row.update(question_ratings_end)
     experiment_data.append(end_row)
 
@@ -790,24 +788,24 @@ if show_tutorial == 1:
 # run experiment
 run_experiment(experiment_data)
 
-# binary manipulation check questions
-questions_binary_ratings = {}
+# Collect end-of-experiment questions
+question_ratings_end = {}
 
 for idx in questions_binary:
     rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
-    questions_binary_ratings[idx["type"]] = rating
+    question_ratings_end[idx["type"]] = rating
     print(f"Response: {idx['type']} = {rating}")
 
     # hands follow-up 
     if rating == "Ja" and "hands" in idx["type"]:
         for idx in questions_hands:
             rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
-            questions_binary_ratings[idx["type"]] = rating
+            question_ratings_end[idx["type"]] = rating
             print(f"Response: {idx['type']} = {rating}")
     elif rating == "Nej" and "hands" in idx["type"]: 
         for idx in questions_hands:
             rating = None 
-            questions_binary_ratings[idx["type"]] = rating
+            question_ratings_end[idx["type"]] = rating
             print(f"Response: {idx['type']} = {rating}")
 
 
@@ -815,16 +813,15 @@ for idx in questions_binary:
     if rating == "Ja" and "abdominal" in idx["type"]:
         for idx in questions_abdominal:
             rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
-            questions_binary_ratings[idx["type"]] = rating
+            question_ratings_end[idx["type"]] = rating
             print(f"Response: {idx['type']} = {rating}")
     elif rating == "Nej" and "abdominal" in idx["type"]:
         for idx in questions_abdominal:
             rating = None
-            questions_binary_ratings[idx["type"]] = rating
+            question_ratings_end[idx["type"]] = rating
             print(f"Response: {idx['type']} = {rating}")
 
 #end of experiment questions
-question_ratings_end = {}
 for idx in questions_end:
     rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
     question_ratings_end[idx["type"]] = rating
@@ -835,7 +832,7 @@ show_text_screen(end_text, allow_skip=True)
 experiment_end = datetime.now()
 
 # save data from experiment
-save_data(experiment_data, tutorial_data, questions_binary_ratings, question_ratings_end)
+save_data(experiment_data, tutorial_data, question_ratings_end)
 
 win.close()
 core.quit()
