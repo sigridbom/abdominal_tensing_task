@@ -200,7 +200,7 @@ questions_exp = {
 
 questions_binary = [
     {
-         "question": "Kunne du mærke noget i din krop, da du knyttede dine hænder?",
+        "question": "Kunne du mærke noget i din krop, da du knyttede dine hænder?",
         "labels": ["Nej", "Ja"],
         "type": "manipulation_check_hands",
         "scale": "BINARY"
@@ -220,7 +220,7 @@ questions_hands = [
         "scale": "VAS"
     },
     {
-        "question": "Oplevede du, at det at knytte dine hænder føles ligesom det, du normalt føler, før du får ondt i dine hænder",
+        "question": "Oplevede du, at det at knytte dine hænder føles ligesom det, du normalt føler, før du får ondt i dine hænder?",
         "labels": ["Slet ikke", "Rigtig meget"],
         "type": "similarity_hands",
         "scale": "VAS"
@@ -243,13 +243,6 @@ questions_abdominal = [
 ]
 
 questions_end = [
-    # {
-    #     "question": "Kunne du mærke noget i din krop, da du knyttede dine hænder?",
-    #     "labels": ["Nej", "Ja"],
-    #     "type": "manipulation_check",
-    #     "scale": "BINARY"
-    # },
-
     {
         "question": "Hvor ondt gjorde det, når du knyttede dine hænder?",
         "labels": ["Ingen smerter", "Værst tænkelige smerter"],
