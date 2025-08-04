@@ -21,7 +21,7 @@ from psychopy import visual, core, event, sound
 
 ###### ----------------- setting variables ------------------ ######
 
-trials_number = 8  # trial number in total - must be an even number for balanced randomization
+trials_number = 2  # trial number in total - must be an even number for balanced randomization
 exp_provoke_duration = 60  # maximum duration for the provocation phase in the experiment in seconds
 tutorial_provoke_duration = 30  # duration for the provocation phase in the tutorial in seconds
 tutorial_trial_types = ["hands", "abdominal"]  # for the tutorial, we only use one of each type and we start with hands
@@ -94,7 +94,8 @@ break_text0 = "+" # intertrial stimulus
 break_text1 = "Prøverunden er nu slut. I eksperimentet skal du prøve at spænde dine mavemuskler eller knytte din hånd i et minut.\n\n" \
 "Hvis du ikke kan gøre det så længe, så tryk på mellemrumstasten for at vise, at du er holdt op.\n\n" \
 "Tryk på mellemrumstasten, når du er klar til at starte eksperimentet."
-break_text2 = "Eksperimentet starter nu"
+break_text2 = "Velkommen til mave-spændings-eksperimentet. \n\nTryk på mellemrumstasten for at fortsætte."
+break_text3 = "Eksperimentet starter nu"
 end_text = "Eksperimentet er nu slut.\n\nTak for din deltagelse!\n\nTryk på mellemrumstasten for at afslutte."
 
 
@@ -132,26 +133,11 @@ questions_exp = {
             "scale": "VAS"
         },
         {
-            "question": "Hvor stærkt var dit ønske om at stoppe med at spænde dine mavemuskler før tid?",
+            "question": "Hvor stærkt var dit ønske om at stoppe med at spænde mavemusklerne før tid?",
             "labels": ["Ikke spor stærkt", "Meget stærkt"],
             "type": "leave_situation",
             "scale": "VAS"
         }
-        # {
-        #     "question": "Gjorde det ondt, da du spændte dine mavemuskler?",
-        #    # "labels": ["Ingen smerte", "Værst tænkelige smerte"],
-        #     "labels": ["0\nIngen smerte", 
-        #                "1", "2", "3", "4","5", "6", "7", "8", "9",
-        #     "10\nVærst tænkelige smerte"],
-        #     "type": "pain",
-        #     "scale": "NRS"
-        # },
-        # {
-        #     "question": "Havde du lyst til at undgå at spænde dine mavemuskler?",
-        #     "labels": ["Slet ikke", "Rigtig meget"],
-        #     "type": "avoidance",
-        #     "scale": "VAS"
-        # }
     ],
     "hands": [
         {
@@ -173,88 +159,86 @@ questions_exp = {
             "scale": "VAS"
         },
         {
-            "question": "Hvor stærkt var dit ønske om at stoppe med at knytte dine hænder før tid?",
+            "question": "Hvor stærkt var dit ønske om at stoppe med at knytte hænderne før tid?",
             "labels": ["Ikke spor stærkt", "Meget stærkt"],
             "type": "leave_situation",
             "scale": "VAS"
         }
-        # {
-        #     "question": "Gjorde det ondt, da du knyttede dine hænder?",
-        #     #"labels": ["0\nIngen smerte", 
-        #      #          "1", "2", "3", "4","5", "6", "7", "8", "9",
-        #     #"10\nVærst tænkelige smerte"],
-        #     "labels": ["Ingen smerter", "Værst tænkelige smerter"],
-        #     #"left_label": "Ingen smerter",
-        #     #"right_label": "Værst tænkelige smerte",
-        #     "type": "pain",
-        #     "scale": "NRS"
-        # },
-        # {
-        #     "question": "Havde du lyst til at undgå at knytte dine hænder?",
-        #     "labels": ["Slet ikke", "Rigtig meget"],
-        #     "type": "avoidance",
-        #     "scale": "VAS"
-        # }
     ]
 }
 
-questions_binary = [
+questions_manipulation_check = [
     {
         "question": "Kunne du mærke noget i din krop, da du knyttede dine hænder?",
-        "labels": ["Nej", "Ja"],
-        "type": "manipulation_check_hands",
+        "labels": ["Ja", "Nej"],
+        "type": "hands_sensation",
         "scale": "BINARY"
     },
     {
         "question": "Kunne du mærke noget i din krop, da du spændte dine mavemuskler?",
-        "labels": ["Nej", "Ja"],
-        "type": "manipulation_check_abdominal",
+        "labels": ["Ja", "Nej"],
+        "type": "abdominal_sensation",
         "scale": "BINARY"
     }
 ]
 
-questions_hands = [
+questions_conditional_hands = [
     {"question": "Hvor stærk var denne sansning/fornemmelse i din krop?",
         "labels": ["Ikke spor stærk", "Meget stærk"],
-        "type": "sensation_hands",
+        "type": "hands_intensity",
         "scale": "VAS"
     },
-    {
-        "question": "Oplevede du, at det at knytte dine hænder føles ligesom det, du normalt føler, før du får ondt i dine hænder?",
-        "labels": ["Slet ikke", "Rigtig meget"],
-        "type": "similarity_hands",
-        "scale": "VAS"
+    {"question": "Hvor i din krop kunne du mærke denne sansning/fornemmelse?",
+        "labels": ["Hænderne", "Maven", "Andet sted"],
+        "type": "hands_localization",
+        "scale": "MULTIPLE"
     }
-
 ]
 
-questions_abdominal = [
+questions_conditional_abdominal = [
      {"question": "Hvor stærk var denne sansning/fornemmelse i din krop?",
         "labels": ["Ikke spor stærk", "Meget stærk"],
-        "type": "sensation_abdominal",
+        "type": "abdominal_intensity",
         "scale": "VAS"
     },
-    {
-        "question": "Oplevede du, at det at spænde dine mavemuskler føles ligesom det, du normalt føler, før du får ondt i maven?",
-        "labels": ["Slet ikke", "Rigtig meget"],
-        "type": "similarity_abdominal",
-        "scale": "VAS"
+    {"question": "Hvor i din krop kunne du mærke denne sansning/fornemmelse?",
+        "labels": ["Hænderne", "Maven", "Andet sted"],
+        "type": "abdominal_localization",
+        "scale": "MULTIPLE"
     }
 ]
 
-questions_end = [
+questions_end_hands = [
     {
+        "question": "Føles det at knytte dine hænder ligesom det, du normalt føler, før du får ondt?",
+        "labels": ["Slet ikke", "Rigtig meget"],
+        "type": "hands_similarity",
+        "scale": "VAS"
+    },
+     {
         "question": "Hvor ondt gjorde det, når du knyttede dine hænder?",
         "labels": ["Ingen smerter", "Værst tænkelige smerter"],
         "type": "hands_pain",
         "scale": "NRS"
+    }
+]
+
+questions_end_abdominal = [
+     {
+        "question": "Føles det at spænde dine mavemuskler ligesom det, du normalt føler, før du får ondt?",
+        "labels": ["Slet ikke", "Rigtig meget"],
+        "type": "abdominal_similarity",
+        "scale": "VAS"
     },
     {
         "question": "Hvor ondt gjorde det, når du spændte dine mavemuskler?",
         "labels": ["Ingen smerter", "Værst tænkelige smerter"],
         "type": "abdomen_pain",
         "scale": "NRS"
-    },
+    }
+]
+
+questions_end = [
     {
         "question": "Hvor svær synes du, opgaven var?",
         "labels": ["Ikke svær", "Meget svær"],
@@ -267,12 +251,6 @@ questions_end = [
         "type": "discomfort",
         "scale": "VAS"
     }
-    # {
-    #     "question": "Oplevede du, at det at spænde i dine mavemuskler er ligesom, når du har ondt i maven?",
-    #     "labels": ["Slet ikke", "Rigtig meget"],
-    #     "type": "similarity_abdominal",
-    #     "scale": "NRS"
-    # }
 ]
 
 
@@ -410,7 +388,11 @@ def show_rating(question, labels, scale_type="VAS"):
     Parameters:
     - question (str): Text of the question
     - labels (list): List with two labels [left, right]
-    - scale_type (str): 'VAS' for continuous or 'NRS' for categorical 0–10 scale
+    - scale_type (str): 
+        'VAS' for continuous 
+        'NRS' for categorical 0–10 scale
+        'BINARY' for binary scale (radio buttons)
+        'MULTIPLE' for multiple choice questions (radio buttons).
 
     Returns:
     - rating (float or int): Participant's selected rating
@@ -470,12 +452,26 @@ def show_rating(question, labels, scale_type="VAS"):
     elif scale_type.upper() == "BINARY":
         slider = visual.Slider(
             win,
-            ticks=[0, 1],
+            ticks=[1, 0],
             labels=labels,
             granularity=1,
             size=(400, 50),
             pos=(0, 0),
-            labelHeight=30,
+            labelHeight=25,
+            style='radio',
+            color='white',
+            markerColor='red'
+        )
+    
+    elif scale_type.upper() == "MULTIPLE":
+        slider = visual.Slider(
+            win,
+            ticks=[0, 1, 2],
+            labels=labels,
+            granularity=1,
+            size=(400, 50),
+            pos=(0, 0),
+            labelHeight=24,
             style='radio',
             color='white',
             markerColor='red'
@@ -656,8 +652,9 @@ def run_tutorial(tutorial_data_list):
 
             # Add VAS ratings to trial data
             trial_data.update(question_ratings)
-
             tutorial_data.append(trial_data)
+            #save_data(experiment_data, tutorial_data, question_ratings_end) # tilføjelse
+
    
         show_text_screen(break_text0, wait_time= random_break) # intertrial interval
 
@@ -678,7 +675,8 @@ def run_experiment(experiment_data_list):
     Returns:
     - experiment_data_list (list): Updated list with trial data.
     """
-    show_text_screen(break_text2, wait_time=3)
+    show_text_screen(break_text2, allow_skip=True)  # Welcome screen
+    show_text_screen(break_text3, wait_time=3)
 
     for i, trial_type in enumerate(trial_types):
         print(f"Running Trial {i+1} — {trial_type.capitalize()}")
@@ -727,6 +725,7 @@ def run_experiment(experiment_data_list):
         trial_data.update(question_ratings)
 
         experiment_data.append(trial_data)
+      #  save_data(experiment_data, tutorial_data, {}) # tilføjelse
 
         show_text_screen(break_text0, wait_time=random_break)  # ITI
 
@@ -784,38 +783,50 @@ run_experiment(experiment_data)
 # Collect end-of-experiment questions
 question_ratings_end = {}
 
-for idx in questions_binary:
+for idx in questions_manipulation_check:
     rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
     question_ratings_end[idx["type"]] = rating
     print(f"Response: {idx['type']} = {rating}")
 
     # hands follow-up 
-    if rating == "Ja" and "hands" in idx["type"]:
-        for idx in questions_hands:
-            rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
-            question_ratings_end[idx["type"]] = rating
-            print(f"Response: {idx['type']} = {rating}")
-    elif rating == "Nej" and "hands" in idx["type"]: 
-        for idx in questions_hands:
-            rating = None 
-            question_ratings_end[idx["type"]] = rating
-            print(f"Response: {idx['type']} = {rating}")
+    if "hands" in idx["type"]:
+        if rating == "Ja":
+            for idx in questions_conditional_hands:
+                rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
+                question_ratings_end[idx["type"]] = rating
+                print(f"Response: {idx['type']} = {rating}")
+        elif rating == "Nej" and "hands" in idx["type"]: 
+            for idx in questions_conditional_hands:
+                rating = None 
+                question_ratings_end[idx["type"]] = rating
+                print(f"Response: {idx['type']} = {rating}")
 
+        for q in questions_end_hands:
+            rating = show_rating(q["question"], q["labels"], scale_type=q.get("scale", "VAS"))
+            question_ratings_end[q["type"]] = rating
+            print(f"Response: {q['type']} = {rating}")
 
     # abdominal follow-up
-    if rating == "Ja" and "abdominal" in idx["type"]:
-        for idx in questions_abdominal:
-            rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
-            question_ratings_end[idx["type"]] = rating
-            print(f"Response: {idx['type']} = {rating}")
-    elif rating == "Nej" and "abdominal" in idx["type"]:
-        for idx in questions_abdominal:
-            rating = None
-            question_ratings_end[idx["type"]] = rating
-            print(f"Response: {idx['type']} = {rating}")
+    elif "abdominal" in idx["type"]:
+        if rating == "Ja":
+            for idx in questions_conditional_abdominal:
+                rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
+                question_ratings_end[idx["type"]] = rating
+                print(f"Response: {idx['type']} = {rating}")
+        elif rating == "Nej" and "abdominal" in idx["type"]:
+            for idx in questions_conditional_abdominal:
+                rating = None
+                question_ratings_end[idx["type"]] = rating
+                print(f"Response: {idx['type']} = {rating}")
 
-#end of experiment questions
-for idx in questions_end:
+ # Always show abdominal-related end questions
+        for q in questions_end_abdominal:
+            rating = show_rating(q["question"], q["labels"], scale_type=q.get("scale", "VAS"))
+            question_ratings_end[q["type"]] = rating
+            print(f"Response: {q['type']} = {rating}")
+
+#end of experiment questions about difficulty and discomfort - not trial type specific
+for idx in questions_end: 
     rating = show_rating(idx["question"], idx["labels"], scale_type=idx.get("scale", "VAS"))
     question_ratings_end[idx["type"]] = rating
     print(f"Response: {idx['type']} = {rating}")
