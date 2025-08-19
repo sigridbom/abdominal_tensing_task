@@ -21,11 +21,12 @@ from psychopy import visual, core, event, sound
 
 ###### ----------------- setting variables ------------------ ######
 
-trials_number = 2  # trial number in total - must be an even number for balanced randomization
+trials_number = 8  # trial number in total - must be an even number for balanced randomization
 exp_provoke_duration = 60  # maximum duration for the provocation phase in the experiment in seconds
 tutorial_provoke_duration = 30  # duration for the provocation phase in the tutorial in seconds
 tutorial_trial_types = ["hands", "abdominal"]  # for the tutorial, we only use one of each type and we start with hands
-
+anticipation_duration = 6 # anticipation duration in seconds before the provocation phase starts
+recovery_duration = 5 # recovery duration in seconds after the provocation phase ends
 
 # background colors for each trial type and default color
 trial_colors = {
@@ -91,7 +92,7 @@ tutorial_texts = [
     ]
 
 break_text0 = "+" # intertrial stimulus 
-break_text1 = "Prøverunden er nu slut. I eksperimentet skal du prøve at spænde dine mavemuskler eller knytte din hånd i et minut.\n\n" \
+break_text1 = "Prøverunden er nu slut. I eksperimentet skal du prøve at spænde dine mavemuskler eller knytte dine hænder i et minut.\n\n" \
 "Hvis du ikke kan gøre det så længe, så tryk på mellemrumstasten for at vise, at du er holdt op.\n\n" \
 "Tryk på mellemrumstasten, når du er klar til at starte eksperimentet."
 break_text2 = "Velkommen til mave-spændings-eksperimentet. \n\nTryk på mellemrumstasten for at fortsætte."
@@ -115,52 +116,60 @@ trial_templates = {
 questions_exp = {
     "abdominal": [
         {
-            "question": "Blev du bange, før du skulle spænde dine mavemuskler?",
+            "question": "Blev du bange, <i>før</i> du skulle spænde dine mavemuskler?",
             "labels": ["Slet ikke", "Meget bange"],
             "type": "fear_pre",
             "scale": "NRS"
         },
         {
-            "question": "Blev du bange, da du spændte dine mavemuskler?",
+            "question": "Blev du bange, <i>da</i> du spændte dine mavemuskler?",
             "labels": ["Slet ikke", "Meget bange"],
             "type": "fear_during",
             "scale": "NRS"
         },
         {
-            "question": "Hvor stærkt var dit ønske om at undgå at spænde dine mavemuskler?",
-            "labels": ["Ikke spor stærkt", "Meget stærkt"],
+            #"question": "Hvor stærkt var dit ønske om at undgå at spænde dine mavemuskler?",
+            #"labels": ["Ikke spor stærkt", "Meget stærkt"],
+            "question": "Ville du gerne undgå at spænde dine mavemuskler?",
+            "labels": ["Slet ikke", "Rigtig meget"],
             "type": "avoidance",
             "scale": "VAS"
         },
         {
-            "question": "Hvor stærkt var dit ønske om at stoppe med at spænde mavemusklerne før tid?",
-            "labels": ["Ikke spor stærkt", "Meget stærkt"],
+            #"question": "Hvor stærkt var dit ønske om at stoppe med at spænde mavemusklerne før tid?",
+            #"labels": ["Ikke spor stærkt", "Meget stærkt"],
+            "question": "Ville du gerne stoppe med at spænde mavemusklerne før tid?",
+            "labels": ["Slet ikke", "Rigtig meget"],
             "type": "leave_situation",
             "scale": "VAS"
         }
     ],
     "hands": [
         {
-            "question": "Blev du bange, før du skulle knytte dine hænder?",
+            "question": "Blev du bange, <i>før</i> du skulle knytte dine hænder?",
             "labels": ["Slet ikke", "Meget bange"],
             "type": "fear_pre",
             "scale": "NRS"
         },
         {
-            "question": "Blev du bange, da du knyttede dine hænder?",
+            "question": "Blev du bange, <i>da</i> du knyttede dine hænder?",
             "labels": ["Slet ikke", "Meget bange"],
             "type": "fear_during",
             "scale": "NRS"
         },
         {
-            "question": "Hvor stærkt var dit ønske om at undgå at knytte dine hænder?",
-            "labels": ["Ikke spor stærkt", "Meget stærkt"],
+            #"question": "Hvor stærkt var dit ønske om at undgå at knytte dine hænder?",
+            #"labels": ["Ikke spor stærkt", "Meget stærkt"],
+            "question": "Ville du gerne undgå at knytte dine hænder?",
+            "labels": ["Slet ikke", "Rigtig meget"],
             "type": "avoidance",
             "scale": "VAS"
         },
         {
-            "question": "Hvor stærkt var dit ønske om at stoppe med at knytte hænderne før tid?",
-            "labels": ["Ikke spor stærkt", "Meget stærkt"],
+           # "question": "Hvor stærkt var dit ønske om at stoppe med at knytte hænderne før tid?",
+           # "labels": ["Ikke spor stærkt", "Meget stærkt"],
+            "question": "Ville du gerne stoppe med at knytte hænderne før tid?",
+            "labels": ["Slet ikke", "Rigtig meget"],
             "type": "leave_situation",
             "scale": "VAS"
         }
@@ -169,13 +178,13 @@ questions_exp = {
 
 questions_manipulation_check = [
     {
-        "question": "Kunne du mærke noget i din krop, da du knyttede dine hænder?",
+        "question": "Kunne du mærke noget i din krop (f.eks. i dine hænder), da du knyttede dine hænder?",
         "labels": ["Ja", "Nej"],
         "type": "hands_sensation",
         "scale": "BINARY"
     },
     {
-        "question": "Kunne du mærke noget i din krop, da du spændte dine mavemuskler?",
+        "question": "Kunne du mærke noget i din krop (f.eks. i din mave), da du spændte dine mavemuskler?",
         "labels": ["Ja", "Nej"],
         "type": "abdominal_sensation",
         "scale": "BINARY"
@@ -183,12 +192,12 @@ questions_manipulation_check = [
 ]
 
 questions_conditional_hands = [
-    {"question": "Hvor stærk var denne sansning/fornemmelse i din krop?",
+    {"question": "Hvor stærk var denne fornemmelse i din krop?",
         "labels": ["Ikke spor stærk", "Meget stærk"],
         "type": "hands_intensity",
         "scale": "VAS"
     },
-    {"question": "Hvor i din krop kunne du mærke denne sansning/fornemmelse?",
+    {"question": "Hvor i din krop kunne du mærke denne fornemmelse?",
         "labels": ["Hænderne", "Maven", "Andet sted"],
         "type": "hands_localization",
         "scale": "MULTIPLE"
@@ -196,12 +205,12 @@ questions_conditional_hands = [
 ]
 
 questions_conditional_abdominal = [
-     {"question": "Hvor stærk var denne sansning/fornemmelse i din krop?",
+     {"question": "Hvor stærk var denne fornemmelse i din krop?",
         "labels": ["Ikke spor stærk", "Meget stærk"],
         "type": "abdominal_intensity",
         "scale": "VAS"
     },
-    {"question": "Hvor i din krop kunne du mærke denne sansning/fornemmelse?",
+    {"question": "Hvor i din krop kunne du mærke denne fornemmelse?",
         "labels": ["Hænderne", "Maven", "Andet sted"],
         "type": "abdominal_localization",
         "scale": "MULTIPLE"
@@ -210,7 +219,8 @@ questions_conditional_abdominal = [
 
 questions_end_hands = [
     {
-        "question": "Føles det at knytte dine hænder ligesom det, du normalt føler, før du får ondt?",
+        #"question": "Føles det at knytte dine hænder ligesom det, du normalt føler, før du får ondt?",
+        "question": "Nogen gange kan man mærke noget i kroppen, lige før man får ondt.\nFøles det at knytte dine hænder på samme måde?",
         "labels": ["Slet ikke", "Rigtig meget"],
         "type": "hands_similarity",
         "scale": "VAS"
@@ -225,7 +235,8 @@ questions_end_hands = [
 
 questions_end_abdominal = [
      {
-        "question": "Føles det at spænde dine mavemuskler ligesom det, du normalt føler, før du får ondt?",
+       # "question": "Føles det at spænde dine mavemuskler ligesom det, du normalt føler, før du får ondt?",
+        "question": "Nogen gange kan man mærke noget i kroppen, lige før man får ondt.\nFøles det at spænde maven på samme måde?",
         "labels": ["Slet ikke", "Rigtig meget"],
         "type": "abdominal_similarity",
         "scale": "VAS"
@@ -381,6 +392,11 @@ def show_text_with_countdown(text, countdown_seconds, allow_skip=False, backgrou
 
 ############### define visual analogue scale function ###############
 
+# Build path to font files inside your experiment folder
+#font_dir = os.path.join(os.path.dirname(__file__), "fonts")
+#font_regular = os.path.join(font_dir, "NotoSans-Regular.ttf")
+#font_bold = os.path.join(font_dir, "NotoSans-Bold.ttf")
+
 def show_rating(question, labels, scale_type="VAS"):
     """
     Displays a VAS (continuous) or NRS (categorical) slider depending on scale_type.
@@ -399,7 +415,19 @@ def show_rating(question, labels, scale_type="VAS"):
     """
 
     # Show question
-    question_text = visual.TextStim(win, text=question, pos=(0, 200), color="white", height=30, wrapWidth=1000)
+    #question_text = visual.TextStim(win, text=question, pos=(0, 200), color="white", height=30, wrapWidth=1000)
+    question_text = visual.TextBox2(
+        win, 
+        text=question, 
+        pos=(0, 200), 
+        color="white", 
+        letterHeight=30, 
+        size = (1000, None), 
+        units= "pix", 
+        alignment = "center", 
+        #font="Noto Sans",  # family name, not a path
+        #font=font_regular,  
+        bold = False)   # let markup <b> control bold
 
     labels = labels or []
 
@@ -498,37 +526,6 @@ def show_rating(question, labels, scale_type="VAS"):
             return slider.getRating()
             rating_time = slider.getRT() # save this!! 
 
-
-
-# def show_vas(question, labels):
-
-#     # show text
-#     vas_text = visual.TextStim(win, text=question, pos=(0, 200), color="white", height=30, wrapWidth=1000)
-
-#     # show slider
-#     slider = visual.Slider(win, ticks=(0,100), 
-#                            labels=labels, 
-#                            granularity=0, #continuous scale = VAS
-#                            size=(600, 50), #width, height of scale 
-#                            pos=(0, 0), # position on the screen - center 
-#                            labelHeight=25, # label text size
-#                            style='rating', # style of slider
-#                            color='white')
-
-#     while True:
-#         vas_text.draw()
-#         slider.draw()
-#         win.flip()
-
-#         keys = event.getKeys()
-#         check_for_quit(keys)
-
-#         # Exit as soon as a rating is selected
-#         if slider.getRating() is not None and slider.rating is not None:
-#            # core.wait(0.5)  # Optional: brief pause for feedback
-#             return slider.getRating()
-
-
 ############# define provocation task function #############
 
 def run_provocation_phase_with_timing(text, max_duration, background_color=None):
@@ -610,7 +607,7 @@ def run_tutorial(tutorial_data_list):
         # get trial specific background color
         bg_color = trial_colors[trial_type]  
 
-        show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=5, background_color=bg_color)
+        show_text_with_countdown(practice_phases["anticipation"], countdown_seconds=anticipation_duration, background_color=bg_color)
 
         duration_sec, start_time, end_time = run_provocation_phase_with_timing(
             text=practice_phases["provocation"],
@@ -619,7 +616,7 @@ def run_tutorial(tutorial_data_list):
         )
         print(f"Practice {trial_type} duration: {duration_sec} seconds")
 
-        show_text_screen(practice_phases["recovery"], wait_time=3)
+        show_text_screen(practice_phases["recovery"], wait_time=recovery_duration)
 
         #questions
         question_ratings = {}
@@ -689,7 +686,7 @@ def run_experiment(experiment_data_list):
 
 
         # Show anticipation, provocation, recovery
-        show_text_with_countdown(phases["anticipation"], countdown_seconds=5, background_color=bg_color)
+        show_text_with_countdown(phases["anticipation"], countdown_seconds=anticipation_duration, background_color=bg_color)
 
         #show_text_with_countdown(phases["provocation"], countdown_seconds=60, allow_skip=True, background_color=bg_color)
 
@@ -702,7 +699,7 @@ def run_experiment(experiment_data_list):
 
         print(f"Trial {i+1} — {trial_type.capitalize()} Duration: {duration_sec} seconds")
 
-        show_text_screen(phases["recovery"], wait_time=3)
+        show_text_screen(phases["recovery"], wait_time=recovery_duration)
 
         # questions
         question_ratings = {}
